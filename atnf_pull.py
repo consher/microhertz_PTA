@@ -1,6 +1,6 @@
-# script to pull pulsar ephemerides from the ATNF pulsar catalog
-# homemade version of the actual python library
-# Conor Sheridan 21/04/2026
+# author: Conor Sheridan 
+# date: 2026/04/21
+# description: Script to pull pulsar ephemerides from the ATNF pulsar catalog. Homemade version of the actual python library
 
 import requests
 import json

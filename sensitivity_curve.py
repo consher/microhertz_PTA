@@ -93,7 +93,7 @@ def main():
     # compute skymap sensitivity for FAST
     psr_coords, sky_coords, skymap_freqs, skymap_hc = sky_sens(psr_list=psr_list, Tobs=Tobs, cadence=cadence, rmserr=rmserr_fast)
 
-    # save FAST skymap array to csv
+    # possesses the same coords and freq range as WSRT, so just save FAST skymap array to csv
     np.savetxt("data/output_data/"+skymap_filename+"_fast.csv", skymap_hc, delimiter=",")
 
 
@@ -160,19 +160,19 @@ def rms_error(tel_terms: dict, pulsar_terms: dict, t_int:float, T_sky = 125, bet
     Kb = 1.3806503e-23 # boltzmann constant
 
     # telescope terms
-    T_ant = tel_terms['T_ant']    # system temp (K)
-    Aeff = tel_terms['Aeff']      # effective area of telescope (m^2) 
-    n_pol = tel_terms['npol']      # number of polarisations (x and y)
-    bw = tel_terms['bw']          # observing bandwidth (Hz)
+    T_ant   = tel_terms['T_ant']    # system temp (K)
+    Aeff    = tel_terms['Aeff']      # effective area of telescope (m^2) 
+    n_pol   = tel_terms['npol']      # number of polarisations (x and y)
+    bw      = tel_terms['bw']          # observing bandwidth (Hz)
 
     # pulsar terms
-    w_50 = float(pulsar_terms['W50']) * 1e-3                # pulsar width at 50 percent of maximum (given in ms but converted to s)
-    p =float(pulsar_terms['P0'])                            # period (s)
-    S_mean = float(pulsar_terms['S400']) * 1e-3 * 1e-26     # mean intensity at obs frequency (400MHz) (given in mJy, converted first to Jy and then to SI units)
+    w_50    = float(pulsar_terms['W50']) * 1e-3                # pulsar width at 50 percent of maximum (given in ms but converted to s)
+    p       = float(pulsar_terms['P0'])                            # period (s)
+    S_mean  = float(pulsar_terms['S400']) * 1e-3 * 1e-26     # mean intensity at obs frequency (400MHz) (given in mJy, converted first to Jy and then to SI units)
 
-    duty = w_50/p                       # duty cycle
-    T_sys = T_sky + T_ant                   # total temp
-    G = Aeff / (2 * Kb)                 # compute the gain
+    duty    = w_50/p                       # duty cycle
+    T_sys   = T_sky + T_ant                   # total temp
+    G       = Aeff / (2 * Kb)                 # compute the gain
 
     # derived from radiometer equation and sigma_toa ~ width / SNR
     return beta * (T_sys / (G * S_mean * np.sqrt(t_int * n_pol * bw))) * np.sqrt(w_50**3 /(p - w_50))
