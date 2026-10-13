@@ -4,4 +4,9 @@ This is the accompanying code for this paper [link]. We used the `hasasia` pytho
 * `sensitivity_curve.py` computes the power-law and sky-map sensitivity curves (radiometer noise limited) of a sub-daily cadence PTA configurable in `pta_config.json` assuming the use of Westerbork Synthesis Radio Telescope & the Five-hundred metre Aperture Spherical Telescope. IT also creates a becnhmark EPTA DR2 power-law sensitivity curve.
 * `best_pulsar_search.py` computes the radiometer error for the EPTA DR2 pulsars given `pta_config.json` and using WSRT to observe them, then ranks them.
 * `plotting.py` produces plots used in paper.
-* `./data/` contains new-physics data taken from [Blanco-Pillado & Olum (2017)](http://doi.org/10.1103/PhysRevD.96.104046) and [Renzini et al. (2022)](http://doi.org/10.3390/galaxies10010034). We get domain wall values from simulation papers (e.g. [Kawasaki & Saikawa 2011](http://doi.org/10.1088/1475-7516/2011/09/008)).
+* `atnf_pull.py` homemade script to pull and read pulsar ephemerides from the (ATNF Pulsar Catalog)[https://www.atnf.csiro.au/research/pulsar/psrcat/] and stores them in `./psrcat2.7.0`.
+
+The directory `./data` contains:
+* `/new-physics_data`: contains new-physics data taken from [Blanco-Pillado & Olum (2017)](http://doi.org/10.1103/PhysRevD.96.104046) and [Renzini et al. (2022)](http://doi.org/10.3390/galaxies10010034). We get domain wall values from simulation papers (e.g. [Kawasaki & Saikawa 2011](http://doi.org/10.1088/1475-7516/2011/09/008)).
+* `/observatories`: observatory config `.json` files.
+* `/output_data`: output data from `sensitivity_curve.py`.
