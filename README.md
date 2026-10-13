@@ -1,2 +1,7 @@
 # Predicting the Sensitivity of a PTA targetting $\mu$ Hz Frequnecies
-This is the accompanying code for this paper [link]. We used the $\texttt{hasasia}$ python library to predict the sensitivty of a Pulsar Timing Array with a sub-daily candence of ToA measurements, attempting to target the microhertz GW frequency band.
+This is the accompanying code for this paper [link]. We used the `hasasia` python library to predict the sensitivty of a Pulsar Timing Array with a sub-daily candence of ToA measurements, attempting to target the microhertz GW frequency band.
+
+* `sensitivity_curve.py` computes the power-law and sky-map sensitivity curves (radiometer noise limited) of a sub-daily cadence PTA configurable in `pta_config.json` assuming the use of Westerbork Synthesis Radio Telescope & the Five-hundred metre Aperture Spherical Telescope. IT also creates a becnhmark EPTA DR2 power-law sensitivity curve.
+* `best_pulsar_search.py` computes the radiometer error for the EPTA DR2 pulsars given `pta_config.json` and using WSRT to observe them, then ranks them.
+* `plotting.py` produces plots used in paper.
+* `./data/` contains new-physics data taken from [Blanco-Pillado & Olum (2017)](http://doi.org/10.1103/PhysRevD.96.104046) and [Renzini et al. (2022)](http://doi.org/10.3390/galaxies10010034). We get domain wall values from simulation papers (e.g. [Kawasaki & Saikawa 2011](http://doi.org/10.1088/1475-7516/2011/09/008)).
