@@ -1,4 +1,4 @@
-from sensitivity_curve import rms_error
+from sensitivity_compute import rms_error
 import json
 import sys
 from atnf_pull import psrcat

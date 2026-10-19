@@ -23,6 +23,11 @@ def main():
     config_file = "./pta_config.json"
     observatory_params = "./data/observatories/"
 
+    # naming convention
+    scurve_filename = f"mupta_scurve_{cadence}-{Tobs}" # output namestem for the sensitivity curves
+    skymap_filename = f"mupta_skymap_{cadence}-{Tobs}" # output namestem for the sky maps
+
+
     with open("./pta_config.json", 'r') as fp:
         pta_config = json.load(fp)
 
@@ -36,10 +41,6 @@ def main():
         wsrt_params = json.load(fp)
     with open(observatory_params+"fast_params.json", 'r') as fp:
         fast_params = json.load(fp)
-
-    # naming convention
-    scurve_filename = f"mupta_scurve_{cadence}-{Tobs}" # output namestem for the sensitivity curves
-    skymap_filename = f"mupta_skymap_{cadence}-{Tobs}" # output namestem for the sky maps
 
     # compute rms error array for WSRT and FAST
     rmserr_wsrt = np.array([rms_error(wsrt_params, catalog.get(psr), toa_int) for psr in psr_list], dtype=float)
@@ -234,6 +235,8 @@ def sky_sens(psr_list: list, Tobs: int, cadence: int, rmserr):
     # return the locations of each pulsar, the array of sy coordinates, the frequency array and the power spectral density skymap
     return np.asarray([theta, phi]), np.asarray([theta_gw, phi_gw]), freqs, skymap_Seff
 
+def ska_dsa_curve():
+    
 
 if __name__ == "__main__":
     main()

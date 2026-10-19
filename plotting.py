@@ -18,7 +18,6 @@ def main():
     plot_dir = "./plots"
     plot_skymap_EDensity(plot_dir,'mupta_skymap_omega_twin-campaign.pdf')
     plot_plsc_EDensity(plot_dir,"mupta_plsc_omega_twin-campaign.pdf")
-
 # -------------
 
 def h_to_omega(f,h_c):
@@ -60,7 +59,7 @@ def S_to_omega(f,S_eff):
 
 def plot_dw_spectra(ax, nbins, fill=False, color="#1D5C28"):
     '''
-    plot domain wall GW signature, with Omega~f^3 for f<f_peak and Omega~f^-1 for f>f_peak
+    plot domain wall GW signature, with Omega~f^3 for f<f_peak and Omega~f^-1 for f>f_peak from .dat file
 
     ax      : axis to plot data on
     nbins   : number of frequency bins
@@ -68,36 +67,16 @@ def plot_dw_spectra(ax, nbins, fill=False, color="#1D5C28"):
     color   : colour of curve
     '''
 
-    with open("./data/new-physics_data/domain_walls.json", 'r') as fp:
-        dw = json.load(fp)
+    # read data
+    dw_data = np.asarray(pd.read_csv("data/new-physics_data/dw_spectrum.dat", delimiter=' ', header=0))
 
-    # get parameters from dictionary
-    sigma = dw['sigma']             # domain wall tension in TeV^3
-    T_ann = dw['T_ann']             # domain wall annihilation tempeature in GeV
-    g_energy = dw['g_energy']       # relativistic energy degrees of freedom at temp T_ann
-    g_entropy = dw['g_entropy']     # relativistic entropy degrees of freedom at temp T_ann
-    A = dw['area_param']            # area parameter estimated as 0.8 +- 0.1
-    epsilon_gw = dw['efficiency_param']   # efficiency parameter estimated to be 0.7 +- 0.4
+    # plot data (omega_gw vs freq)
+    ax.loglog(dw_data[:,0], dw_data[:,1], label="Domain Walls", linestyle='-.', color=color)
 
-    # compute the peak frequency and the value of Omega_gw at that frequency
-    f_peak = 1.1e-9 * (g_energy / 10)**(1/2.) * (g_entropy / 10)**(-1/3.) * (T_ann / 1e-2)
-    Omega_peak = ( 7.2e-18 * epsilon_gw * A**2 * (g_energy / 10)**(-4/3.) * (sigma / 1)**2 * (T_ann/ 1e-2)**(-4) ) / (H**2)
-
-    # create frequency and energy density arrays
-    f = np.logspace(-12, 3, nbins)
-    Omega_gw = np.empty(nbins)
-
-    for i in range(0,nbins):
-        if f[i] <= f_peak:
-            Omega_gw[i] = Omega_peak * (f[i] / f_peak)**3
-        else:
-            Omega_gw[i] = Omega_peak * (f[i] / f_peak)**(-1)
-
-    ax.loglog(f, Omega_gw, label="Domain Walls", linestyle='-.', color=color)
-
+    # fill below curve if requested
     if fill == True:
         lower = np.zeros(nbins) + 1e-30
-        ax.fill_between(f, Omega_gw, lower, color='#1D5C28', alpha=0.2)
+        ax.fill_between(dw_data[:,0], dw_data[:,1], lower, color='#1D5C28', alpha=0.2)
 
 
 def plot_fopt_spectra(ax, T, plot_individually=False, fill=False, color="#1C2320"):
