@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import scienceplots
 import healpy as hp
 import json
+from astropy import units as u
+from astropy.coordinates import SkyCoord
 
 HUBBLE = 2.20e-18 # Hubble constant (68km/s/Mpc)
 H = 0.6766 # the reduced hubble constant H0/100
@@ -357,6 +359,7 @@ def plot_skymap_EDensity(plot_dir,NAME):
     idx = np.where(S_to_omega(1e-7,skymap_fast_B[skymap_freq_idx]) == fast_min_B)[0][0]
     theta_min = sky_coords[0][idx]
     phi_min = sky_coords[1][idx]
+    
 
     if(theta_min >= 0):
         theta_min = np.pi/2. - abs(theta_min) # add latitude to pi/2 to be below ecliptic
@@ -365,9 +368,16 @@ def plot_skymap_EDensity(plot_dir,NAME):
     if(phi_min > np.pi and phi_min < 2*np.pi):
         phi_min -= 2*np.pi # subtract 2*pi from any angle in the range [pi, 2*pi] to keep in bounds
 
-    # print the direction of best-sensitivity
-    print('{0:2.1f} degrees N, {1:2.1f} degrees E'.format(np.rad2deg(theta_min),np.rad2deg(phi_min)))
+    # Transform to equatorial coordinates
+    theta_min_deg   = np.rad2deg(theta_min)
+    phi_min_deg     = np.rad2deg(phi_min)
 
+    ecliptic_coord = SkyCoord(lat=theta_min_deg*u.degree, lon=phi_min_deg*u.degree, frame='barycentrictrueecliptic')
+    equatorial_coord = ecliptic_coord.transform_to('icrs')
+
+    # print the direction of best-sensitivity
+    print('Ecliptic\t {0:2.1f} degrees N, {1:2.1f} degrees E'.format(theta_min_deg,phi_min_deg))
+    print('Equatorial\t RA {0:2.1f}, DEC {1:2.1f}'.format(equatorial_coord.ra,equatorial_coord.dec))
 
     # plot molleide projection of for each campaign A & B and for each telescope WSRT & FAST
     sub = 221
