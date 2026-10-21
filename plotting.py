@@ -13,13 +13,15 @@ from astropy.coordinates import SkyCoord
 
 HUBBLE = 2.20e-18 # Hubble constant (68km/s/Mpc)
 H = 0.6766 # the reduced hubble constant H0/100
+DAY = 24*3600
+YEAR = 365*DAY
 
 # -------------
 def main():
     # run desired plotting functions here
     plot_dir = "./plots"
-    plot_skymap_EDensity(plot_dir,'mupta_skymap_omega_twin-campaign.pdf')
-    plot_plsc_EDensity(plot_dir,"mupta_plsc_omega_twin-campaign.pdf")
+    plot_skymap_SNR(plot_dir,'mupta_skymap_omega_twin-campaign-snr.pdf',plot_freq=1e-6, strain=8.9e-14)
+    plot_plsc_EDensity(plot_dir,"mupta_plsc_omega_twin-campaign-x.pdf")
 # -------------
 
 def h_to_omega(f,h_c):
@@ -259,71 +261,15 @@ def plot_plsc_EDensity(plot_dir,NAME):
 
         plt.savefig(f"{plot_dir}/{NAME}")
 
-
-def plot_plsc_SNRrange(plot_dir,NAME):
+def plot_skymap_SNR(plot_dir,NAME,plot_freq,strain):
     '''
-    Plots power-law sensitivity curves, and GW targets if interest, in units of energy density (Omega_gw)
+    Plots skymap singal-to-noise ratio for a given strain
     
     plot_dir    : plot output
     NAME        : name of output plot (excluding .pdf suffix)
+    plot_freq   : GW frequency to plot
+    strain      : strain of source to calculate SNR of
     '''
-    
-    # plotting style
-    plt.style.use(['science','ieee','no-latex'])
-    plt.rcParams['font.size'] = 12
-    fig = plt.figure(figsize=(6,4))
-    ax = fig.add_subplot(1,1,1)
-
-    # plotting options
-    fmin = 1e-9
-    fmax = 1e-3
-    ymin = 1e-15
-    ymax = 1e6
-
-    # frequency and strain are the first and second indices respectively
-    mupta_scurve_wsrt = np.loadtxt("data/output_data/mupta_scurve_2-1_wsrt.csv", delimiter=",")
-    mupta_scurve_fast = np.loadtxt("data/output_data/mupta_scurve_2-1_fast.csv", delimiter=",")
-    epta_scurve  = np.loadtxt("data/output_data/epta_scurve.csv", delimiter=",")
-
-    # convert from characteristic strain to omega
-    mupta_scurve_wsrt = [mupta_scurve_wsrt[0], h_to_omega(mupta_scurve_wsrt[0],mupta_scurve_wsrt[1]), h_to_omega(mupta_scurve_wsrt[0],mupta_scurve_wsrt[2]), h_to_omega(mupta_scurve_wsrt[0],mupta_scurve_wsrt[3])]
-    mupta_scurve_fast = [mupta_scurve_fast[0], h_to_omega(mupta_scurve_fast[0],mupta_scurve_fast[1]), h_to_omega(mupta_scurve_fast[0],mupta_scurve_fast[2]), h_to_omega(mupta_scurve_fast[0],mupta_scurve_fast[3])]
-    epta_scurve       = [epta_scurve[0], h_to_omega(epta_scurve[0],epta_scurve[1]), h_to_omega(epta_scurve[0],epta_scurve[2]), h_to_omega(epta_scurve[0],epta_scurve[3])]
-
-    plot_fopt_spectra(ax) # plot first order phase transition
-    plot_cs_spectra(ax, [-10,-11,-12, -13], fill=False) # plot cosmic string background spectra
-    plot_dw_spectra(ax, nbins=1000) # plot domain wall spectrum with 1000 frequency bins
-
-    ax.loglog(mupta_scurve_wsrt[0], mupta_scurve_wsrt[1],linestyle='-',color='#274e13',lw=1.25,label='$\\mu$PTA with WSRT') # lower bound
-    ax.loglog(mupta_scurve_wsrt[0], mupta_scurve_wsrt[3],linestyle='-',color='#274e13',lw=1.25) # upper bound
-    ax.fill_between(mupta_scurve_wsrt[0], mupta_scurve_wsrt[1], mupta_scurve_wsrt[2], color='#274e13', alpha=0.2)
-    ax.loglog(mupta_scurve_fast[0], mupta_scurve_fast[1],linestyle='--',color="#B50707",lw=1.25,label='$\\mu$PTA with FAST') # lower bound
-    ax.loglog(mupta_scurve_fast[0], mupta_scurve_fast[3],linestyle='--',color="#B50707",lw=1.25) # upper bound
-    ax.fill_between(mupta_scurve_fast[0], mupta_scurve_fast[1], mupta_scurve_fast[2], color='#B50707', alpha=0.2)
-    ax.loglog(epta_scurve[0], epta_scurve[1],linestyle='-.',color='#6a1aa8',lw=1.25,label='EPTA') # lower bound
-    ax.loglog(epta_scurve[0], epta_scurve[3],linestyle='-.',color='#6a1aa8',lw=1.25) # upper bound
-    ax.fill_between(epta_scurve[0], epta_scurve[1], epta_scurve[2], color='#6a1aa8', alpha=0.2)
-
-
-    ax.set_xlabel('Frequency $f_\\text{gw}$ [Hz]',)
-    #ax.set_ylabel('Characteristic Strain $h_c$')
-    ax.set_ylabel('Energy Density $\\Omega_\\text{gw}$')
-    ax.set_xlim(fmin,fmax)
-    ax.set_ylim(ymin,ymax)
-    handles, labels = plt.gca().get_legend_handles_labels() # rearrange legend items to new order
-    order = [3,0,1,2]   
-    plt.legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='upper left')
-
-    plt.savefig(f"{plot_dir}/{NAME}")
-
-
-
-def plot_skymap_EDensity(plot_dir,NAME):
-    '''
-    Plots skymap sensitivity, in units of energy density (Omega_gw)
-    
-    plot_dir    : plot output
-    NAME        : name of output plot (excluding .pdf suffix)'''
 
     # plotting style
     fig = plt.figure(1,figsize=(20,10))
@@ -337,9 +283,12 @@ def plot_skymap_EDensity(plot_dir,NAME):
     skymap_fast_B = np.loadtxt("data/output_data/mupta_skymap_4-2_fast.csv", delimiter=",")
     psr_coords  = np.loadtxt("data/output_data/psr_coords.csv", delimiter=",")
     sky_coords  = np.loadtxt("data/output_data/sky_coords.csv", delimiter=",")
+    #freqs  = np.loadtxt("data/output_data/freqrange.csv", delimiter=",")
 
-    skymap_freq_idx = 30 # index of skymap matching frequency of 1e-7 Hz
-    npsr = len(psr_coords[0,:])
+    # calculate index of skymap matching desired frequency; 20=1e-8, 30=1e-7, 40=1e-6,... 
+    skymap_freq_idx = int(10 * (10 + np.log10(plot_freq)))
+
+    npsr = len(psr_coords[0,:]) # get number of pulsars
 
     # format the pulsar coordinates to show correctly on the plot
     for i in range(npsr):
@@ -350,16 +299,16 @@ def plot_skymap_EDensity(plot_dir,NAME):
         if(psr_coords[1,i] > np.pi and psr_coords[1,i] < 2*np.pi):
             psr_coords[1,i] -= 2*np.pi # subtract 2*pi from any angle in the range [pi, 2*pi] to keep in bounds
 
-    # print the maximum sensitivity for both skymaps in units of energy density
-    wsrt_min_A = np.min(S_to_omega(1e-7,skymap_wsrt_A[skymap_freq_idx]))
-    fast_min_A = np.min(S_to_omega(1e-7,skymap_fast_A[skymap_freq_idx]))
-    wsrt_min_B = np.min(S_to_omega(1e-7,skymap_wsrt_B[skymap_freq_idx]))
-    fast_min_B = np.min(S_to_omega(1e-7,skymap_fast_B[skymap_freq_idx]))
+    # get the best sensitivity for all skymaps in units of S_eff
+    wsrt_min_A = np.min(skymap_wsrt_A[skymap_freq_idx])
+    fast_min_A = np.min(skymap_fast_A[skymap_freq_idx])
+    wsrt_min_B = np.min(skymap_wsrt_B[skymap_freq_idx])
+    fast_min_B = np.min(skymap_fast_B[skymap_freq_idx])
 
-    idx = np.where(S_to_omega(1e-7,skymap_fast_B[skymap_freq_idx]) == fast_min_B)[0][0]
-    theta_min = sky_coords[0][idx]
-    phi_min = sky_coords[1][idx]
-    
+    # get optimal position (will be the same for all PTA configurations as pulsar choice doesn't change, so get optimal position of just one config)
+    optimal_idx = np.where(skymap_fast_B[skymap_freq_idx] == fast_min_B)[0][0]
+    theta_min = sky_coords[0][optimal_idx]
+    phi_min = sky_coords[1][optimal_idx]
 
     if(theta_min >= 0):
         theta_min = np.pi/2. - abs(theta_min) # add latitude to pi/2 to be below ecliptic
@@ -379,28 +328,32 @@ def plot_skymap_EDensity(plot_dir,NAME):
     print('Ecliptic\t {0:2.1f} degrees N, {1:2.1f} degrees E'.format(theta_min_deg,phi_min_deg))
     print('Equatorial\t RA {0:2.1f}, DEC {1:2.1f}'.format(equatorial_coord.ra,equatorial_coord.dec))
 
+    # compute snr for a given strain
+    T_obsA = 1*YEAR
+    T_obsB = 2*YEAR
+    snr_wsrt_A = strain * np.sqrt(T_obsA/skymap_wsrt_A[skymap_freq_idx])
+    snr_wsrt_B = strain * np.sqrt(T_obsB/skymap_wsrt_B[skymap_freq_idx])
+    snr_fast_A = strain * np.sqrt(T_obsA/skymap_fast_A[skymap_freq_idx])
+    snr_fast_B = strain * np.sqrt(T_obsB/skymap_fast_B[skymap_freq_idx])
+
     # plot molleide projection of for each campaign A & B and for each telescope WSRT & FAST
     sub = 221
-    skymap_data_ar = [skymap_wsrt_A[skymap_freq_idx], skymap_wsrt_B[skymap_freq_idx], skymap_fast_A[skymap_freq_idx], skymap_fast_B[skymap_freq_idx]]
-    skymap_min_ar = [wsrt_min_A, wsrt_min_B, fast_min_A, fast_min_B]
+    skymap_snr_ar = [snr_wsrt_A,snr_wsrt_B,snr_fast_A,snr_fast_B]
     skymap_title_ar = ["WSRT Campaign A", "WSRT Campaign B", "FAST Campaign A", "FAST Campaign B"]
-    cbar_tick_ar = [[1e-6,1e-5,1e-4,1e-3], [1e-6,1e-5,1e-4,1e-3], [1e-7,1e-6,1e-5,1e-4],[1e-7,1e-6,1e-5,1e-4]]
+    cbar_tick_ar = [[0,1,2,3,4,5],[0,1,2,3,4,5],[0,1,2,3,4,5],[0,1,2,3,4,5]]
 
     for i in range(0,4):
         hp.projview(
-            S_to_omega(1e-7,skymap_data_ar[i]),# convert to energy density
+            skymap_snr_ar[i],
             fig=1,
             sub=sub,
-            #rot=(90,0,0), # rotate latitude by 90 degrees to align with shifted ecliptic equator
             projection_type="mollweide",
             coord='E',
             #graticule_coord='E',
-            cmap="plasma_r",
-            unit="$\\text{log}_{10}\\Omega_\\text{gw}$",
-            norm="log",
-            # min=min_hc,
-            # max=max_hc,
-            title=skymap_title_ar[i]+"\n$\\Omega_\\text{gw}^\\text{min}=$"+f"{skymap_min_ar[i]:.2E}",
+            cmap="plasma",
+            unit="$\\rho$",
+            norm="linear",
+            title=skymap_title_ar[i]+"\n$\\rho_\\text{max}=$"+f"{np.max(skymap_snr_ar[i]):.2f}", 
             cbar=True,
             cb_orientation="vertical",
             show_tickmarkers=False,
@@ -415,12 +368,6 @@ def plot_skymap_EDensity(plot_dir,NAME):
             flip="astro",
             fontsize={"cbar_label":18, "cbar_tick_label":16}
         )
-
-        # format colorbar labels
-        cb = plt.gca().collections[-1].colorbar # retrieve colorbar object
-        cb.ax.set_yscale('log')
-        cb.update_ticks() 
-        cb.ax.set_yticklabels([f"${int(np.log10(x))}$" for x in cbar_tick_ar[i]]) # convert colorbar labels to just the power indices
 
         # overplot pulsar locations using modified psr_coords
         hp.newprojplot(psr_coords[0,:], psr_coords[1,:], "w*", markersize=12, markeredgecolor="k")

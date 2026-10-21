@@ -23,11 +23,6 @@ def main():
     config_file = "./pta_config.json"
     observatory_params = "./data/observatories/"
 
-    # naming convention
-    scurve_filename = f"mupta_scurve_{cadence}-{Tobs}" # output namestem for the sensitivity curves
-    skymap_filename = f"mupta_skymap_{cadence}-{Tobs}" # output namestem for the sky maps
-
-
     with open("./pta_config.json", 'r') as fp:
         pta_config = json.load(fp)
 
@@ -35,6 +30,10 @@ def main():
     Tobs = pta_config["Tobs"]         # years, total observation time
     cadence = pta_config["cadence"]   # cadence in number per day
     toa_int = pta_config["toa_int"]   # seconds, integration time to create one ToA
+
+    # naming convention
+    scurve_filename = f"mupta_scurve_{cadence}-{Tobs}" # output namestem for the sensitivity curves
+    skymap_filename = f"mupta_skymap_{cadence}-{Tobs}" # output namestem for the sky maps
 
     # get observatory parameters
     with open(observatory_params+"wsrt_params.json", 'r') as fp:
@@ -47,7 +46,7 @@ def main():
     rmserr_fast = np.array([rms_error(fast_params, catalog.get(psr), toa_int) for psr in psr_list], dtype=float)
 
     #  -- WSRT --
-    # scurve opject has frequency in first index and SNR 1, 10 sensitivity curve in second and third index respectively
+    # scurve opject has frequency in first index and SNR 1, 5, 10 sensitivity curve in second third and fourth index respectively
     freqs, scurve1  = gwb_PLSC(psr_list=psr_list, Tobs=Tobs, cadence=cadence, snr=1, rmserr=rmserr_wsrt)
     freqs, scurve5  = gwb_PLSC(psr_list=psr_list, Tobs=Tobs, cadence=cadence, snr=5, rmserr=rmserr_wsrt)
     freqs, scurve10 = gwb_PLSC(psr_list=psr_list, Tobs=Tobs, cadence=cadence, snr=10, rmserr=rmserr_wsrt)
@@ -57,7 +56,7 @@ def main():
     np.savetxt("data/output_data/"+scurve_filename+"_wsrt.csv", senscurve, delimiter=",")
 
     # -- FAST --
-    # scurve opject has frequency in first index and SNR 1, 5, 10 sensitivity curve in second and third index respectively
+    # scurve opject has frequency in first index and SNR 1, 5, 10 sensitivity curve in second third and fourth index respectively
     freqs, scurve1  = gwb_PLSC(psr_list=psr_list, Tobs=Tobs, cadence=cadence, snr=1, rmserr=rmserr_fast)
     freqs, scurve5  = gwb_PLSC(psr_list=psr_list, Tobs=Tobs, cadence=cadence, snr=5, rmserr=rmserr_fast)
     freqs, scurve10 = gwb_PLSC(psr_list=psr_list, Tobs=Tobs, cadence=cadence, snr=10, rmserr=rmserr_fast)
@@ -230,13 +229,15 @@ def sky_sens(psr_list: list, Tobs: int, cadence: int, rmserr):
     skymap = hasky.SkySensitivity(spectra, theta_gw, phi_gw)
 
     # swap axes to get desired format
-    skymap_Seff = np.swapaxes( np.asarray([(skymap.S_effSky[:,i]) for i in range(NPIX)]) ,0,1)
+    skymap_Seff = np.swapaxes(np.asarray([(skymap.S_effSky[:,i]) for i in range(NPIX)]) ,0,1)
+    #skymap_Seff = skymap.S_effSky
 
     # return the locations of each pulsar, the array of sy coordinates, the frequency array and the power spectral density skymap
     return np.asarray([theta, phi]), np.asarray([theta_gw, phi_gw]), freqs, skymap_Seff
 
 def ska_dsa_curve():
-    
+
+    return 0
 
 if __name__ == "__main__":
     main()
