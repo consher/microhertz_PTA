@@ -20,9 +20,10 @@ YEAR = 365*DAY
 def main():
     # run desired plotting functions here
     plot_dir = "./plots"
-    #plot_skymap_SNR(plot_dir,'mupta_skymap_omega_twin-campaign.pdf',plot_freq=1e-6, strain=8.9e-14)
-    #plot_plsc_EDensity(plot_dir,"mupta_plsc_omega_twin-campaign.pdf")
-    dsa_ska_plot(plot_dir, "dsa-ska_plcurve-skymap.pdf",4.9e-14, check_freq=False)
+    data_dir = "../output_data"
+    plot_skymap_SNR(data_dir, plot_dir,'mupta_skymap_omega_twin-campaign.pdf',plot_freq=1e-6, strain=8.9e-14)
+    plot_plsc_EDensity(data_dir, plot_dir,"mupta_plsc_omega_twin-campaign.pdf")
+    dsa_ska_plot(data_dir, plot_dir, "dsa-ska_plcurve-skymap.pdf",4.9e-14, check_freq=False)
 # -------------
 
 def h_to_omega(f,h_c):
@@ -193,7 +194,7 @@ def plot_cs_spectra(ax, Gmu_list,units='density', fill=True, plot_individually=F
         ax.set_xlabel('Frequency $f_\\text{gw}$ [Hz]',)
         ax.set_ylabel('Characteristic Strain $h_c$')
 
-def plot_plsc_EDensity(plot_dir,NAME):
+def plot_plsc_EDensity(data_dir,plot_dir,NAME):
         '''
         Plots power-law sensitivity curves, and GW targets if interest, in units of energy density (Omega_gw)
         
@@ -214,11 +215,11 @@ def plot_plsc_EDensity(plot_dir,NAME):
         ymax = 1e6
     
         # frequency and strain are the first and second indices respectively
-        mupta_plcurve_wsrtA = np.loadtxt("data/output_data/mupta_plcurve_2-1_wsrt.csv", delimiter=",")
-        mupta_plcurve_fastA = np.loadtxt("data/output_data/mupta_plcurve_2-1_fast.csv", delimiter=",")
-        mupta_plcurve_wsrtB = np.loadtxt("data/output_data/mupta_plcurve_4-2_wsrt.csv", delimiter=",")
-        mupta_plcurve_fastB = np.loadtxt("data/output_data/mupta_plcurve_4-2_fast.csv", delimiter=",")
-        epta_scurve  = np.loadtxt("data/output_data/epta_scurve.csv", delimiter=",")
+        mupta_plcurve_wsrtA = np.loadtxt(data_dir+"/mupta_plcurve_2-1_wsrt.csv", delimiter=",")
+        mupta_plcurve_fastA = np.loadtxt(data_dir+"/mupta_plcurve_2-1_fast.csv", delimiter=",")
+        mupta_plcurve_wsrtB = np.loadtxt(data_dir+"/mupta_plcurve_4-2_wsrt.csv", delimiter=",")
+        mupta_plcurve_fastB = np.loadtxt(data_dir+"/mupta_plcurve_4-2_fast.csv", delimiter=",")
+        epta_scurve  = np.loadtxt(data_dir+"/epta_scurve.csv", delimiter=",")
     
         # convert from characteristic strain to omega
         mupta_plcurve_wsrtA = [mupta_plcurve_wsrtA[0], h_to_omega(mupta_plcurve_wsrtA[0],mupta_plcurve_wsrtA[1]), h_to_omega(mupta_plcurve_wsrtA[0],mupta_plcurve_wsrtA[2]), h_to_omega(mupta_plcurve_wsrtA[0],mupta_plcurve_wsrtA[3])]
@@ -268,7 +269,7 @@ def plot_plsc_EDensity(plot_dir,NAME):
 
         plt.savefig(f"{plot_dir}/{NAME}")
 
-def plot_skymap_SNR(plot_dir,NAME,plot_freq,strain):
+def plot_skymap_SNR(data_dir,plot_dir,NAME,plot_freq,strain):
     '''
     Plots skymap singal-to-noise ratio for a given strain
     
@@ -284,13 +285,13 @@ def plot_skymap_SNR(plot_dir,NAME,plot_freq,strain):
     plt.rcParams['font.size'] = 20
 
     # load data
-    skymap_wsrt_A = np.loadtxt("data/output_data/mupta_skymap_2-1_wsrt.csv", delimiter=",")
-    skymap_fast_A = np.loadtxt("data/output_data/mupta_skymap_2-1_fast.csv", delimiter=",")
-    skymap_wsrt_B = np.loadtxt("data/output_data/mupta_skymap_4-2_wsrt.csv", delimiter=",")
-    skymap_fast_B = np.loadtxt("data/output_data/mupta_skymap_4-2_fast.csv", delimiter=",")
-    psr_coords  = np.loadtxt("data/output_data/mupta_psr_coords.csv", delimiter=",")
-    sky_coords  = np.loadtxt("data/output_data/mupta_sky_coords.csv", delimiter=",")
-    #freqs  = np.loadtxt("data/output_data/freqrange.csv", delimiter=",")
+    skymap_wsrt_A = np.loadtxt(data_dir+"/mupta_skymap_2-1_wsrt.csv", delimiter=",")
+    skymap_fast_A = np.loadtxt(data_dir+"/mupta_skymap_2-1_fast.csv", delimiter=",")
+    skymap_wsrt_B = np.loadtxt(data_dir+"/mupta_skymap_4-2_wsrt.csv", delimiter=",")
+    skymap_fast_B = np.loadtxt(data_dir+"/mupta_skymap_4-2_fast.csv", delimiter=",")
+    psr_coords  = np.loadtxt(data_dir+"/mupta_psr_coords.csv", delimiter=",")
+    sky_coords  = np.loadtxt(data_dir+"/mupta_sky_coords.csv", delimiter=",")
+    #freqs  = np.loadtxt(data_dir+"/freqrange.csv", delimiter=",")
 
     # calculate index of skymap matching desired frequency; 20=1e-8, 30=1e-7, 40=1e-6,... 
     skymap_freq_idx = int(10 * (10 + np.log10(plot_freq)))
@@ -384,7 +385,7 @@ def plot_skymap_SNR(plot_dir,NAME,plot_freq,strain):
 
     plt.savefig(f"{plot_dir}/{NAME}")
 
-def dsa_ska_plot(plot_dir,NAME, strain, check_freq=False):
+def dsa_ska_plot(data_dir,plot_dir,NAME, strain, check_freq=False):
     '''
         Plots power-law sensitivity curve and skymap of DSA + SKA-Mid PTA
         
@@ -410,10 +411,10 @@ def dsa_ska_plot(plot_dir,NAME, strain, check_freq=False):
     Tobs = 2
 
     # load data
-    mupta_plcurve_fastB     = np.loadtxt("data/output_data/mupta_plcurve_4-2_fast.csv", delimiter=",")
-    freqs, dsa_ska_plcurve  = np.loadtxt("data/output_data/dsa-ska_plcurve.csv", delimiter=",")
-    dsa_ska_skymap          = np.loadtxt("data/output_data/dsa-ska_skymap.csv", delimiter=",")
-    psr_coords              = np.loadtxt("data/output_data/dsa-ska_psrs.csv", delimiter=",")
+    mupta_plcurve_fastB     = np.loadtxt(data_dir+"/mupta_plcurve_4-2_fast.csv", delimiter=",")
+    freqs, dsa_ska_plcurve  = np.loadtxt(data_dir+"/dsa-ska_plcurve.csv", delimiter=",")
+    dsa_ska_skymap          = np.loadtxt(data_dir+"/dsa-ska_skymap.csv", delimiter=",")
+    psr_coords              = np.loadtxt(data_dir+"/dsa-ska_psrs.csv", delimiter=",")
 
     # plot the FAST campaign B and DSA+SKA PL curve
     axes[0].loglog(freqs, dsa_ska_plcurve,linestyle='-',color="#EF78EF",lw=1.5,label="DSA + SKA-Mid") 
