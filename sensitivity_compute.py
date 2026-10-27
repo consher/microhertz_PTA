@@ -20,8 +20,9 @@ def main():
     catalog = psrcat(".")
     config_file = "./pta_config.json"
     observatory_params = "./data/observatories/"
+    output_dir ="../output_data/"
 
-    with open("./pta_config.json", 'r') as fp:
+    with open(config_file, 'r') as fp:
         pta_config = json.load(fp)
 
     psr_list = pta_config["psr_list"] # list of pulsars in array
@@ -51,7 +52,7 @@ def main():
     senscurve = np.asarray([freqs, scurve1, scurve5, scurve10])
 
     # save to csv file for plotting
-    np.savetxt("data/output_data/"+scurve_filename+"_wsrt.csv", senscurve, delimiter=",")
+    np.savetxt(output_dir+scurve_filename+"_wsrt.csv", senscurve, delimiter=",")
 
     # -- FAST --
     # scurve opject has frequency in first index and SNR 1, 5, 10 sensitivity curve in second third and fourth index respectively
@@ -61,7 +62,7 @@ def main():
     senscurve = np.asarray([freqs, scurve1, scurve5, scurve10])
 
     # save to csv file for plotting
-    np.savetxt("data/output_data/"+scurve_filename+"_fast.csv", senscurve, delimiter=",")
+    np.savetxt(output_dir+scurve_filename+"_fast.csv", senscurve, delimiter=",")
 
     # repeat for EPTA parameters assuming a standard error of 500 ns
     psr_listEPTA = ['J0030+0451','J0613-0200','J0751+1807','J0900-3144','J1012+5307','J1022+1001','J1024-0719','J1455-3330','J1600-3053','J1640+2224','J1713+0747','J1730-2304','J1738+0333','J1744-1134','J1751-2857','J1801-1417','J1804-2717','J1843-1113','J1857+0943','J1909-3744','J1910+1256','J1911+1347','J1918-0642','J2124-3358','J2322+2057']
@@ -71,37 +72,37 @@ def main():
     senscurve = np.asarray([freqs, scurve1, scurve5, scurve10])
 
     # save to csv file for plotting
-    np.savetxt("data/output_data/epta_scurve.csv", senscurve, delimiter=",")
+    np.savetxt(output_dir+"epta_scurve.csv", senscurve, delimiter=",")
 
     # compute skymap sensitivity for WSRT
     psr_coords, sky_coords, skymap_freqs, skymap_hc = sky_sens(psr_list=psr_list, Tobs=Tobs, cadence=cadence, rmserr=rmserr_wsrt)
 
     # save WSRT skymap array to csv
-    np.savetxt("data/output_data/"+skymap_filename+"_wsrt.csv", skymap_hc, delimiter=",")
+    np.savetxt(output_dir+skymap_filename+"_wsrt.csv", skymap_hc, delimiter=",")
 
     # save psr coordinates
-    np.savetxt("data/output_data/mupta_psr_coords.csv", psr_coords, delimiter=",")
+    np.savetxt(output_dir+"mupta_psr_coords.csv", psr_coords, delimiter=",")
 
     # save sky coordinates
-    np.savetxt("data/output_data/mupta_sky_coords.csv", sky_coords, delimiter=",")
+    np.savetxt(output_dir+"mupta_sky_coords.csv", sky_coords, delimiter=",")
 
     # save frequency range
-    np.savetxt("data/output_data/freqrange.csv", skymap_freqs, delimiter=",")
+    np.savetxt(output_dir+"freqrange.csv", skymap_freqs, delimiter=",")
 
     # compute skymap sensitivity for FAST
     psr_coords, sky_coords, skymap_freqs, skymap_hc = sky_sens(psr_list=psr_list, Tobs=Tobs, cadence=cadence, rmserr=rmserr_fast)
 
     # possesses the same coords and freq range as WSRT, so just save FAST skymap array to csv
-    np.savetxt("data/output_data/"+skymap_filename+"_fast.csv", skymap_hc, delimiter=",")
+    np.savetxt(output_dir+skymap_filename+"_fast.csv", skymap_hc, delimiter=",")
 
 
     # DSA-SKA data
     dsa_ska_plcurve, dsa_ska_psrs, dsa_ska_skymap = ska_dsa_pta()
 
     # save dsa-ska curve data
-    np.savetxt("data/output_data/dsa-ska_plcurve.csv", dsa_ska_plcurve, delimiter=',')
-    np.savetxt("data/output_data/dsa-ska_skymap.csv", dsa_ska_skymap, delimiter=',')
-    np.savetxt("data/output_data/dsa-ska_psrs.csv", dsa_ska_psrs, delimiter=',')
+    np.savetxt(output_dir+"dsa-ska_plcurve.csv", dsa_ska_plcurve, delimiter=',')
+    np.savetxt(output_dir+"dsa-ska_skymap.csv", dsa_ska_skymap, delimiter=',')
+    np.savetxt(output_dir+"dsa-ska_psrs.csv", dsa_ska_psrs, delimiter=',')
 
 
 
