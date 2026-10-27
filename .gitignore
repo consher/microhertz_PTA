@@ -1,0 +1,6 @@
+# cache directories
+__pycache__/
+.DS_Store
+
+# output data
+data/output_data/
