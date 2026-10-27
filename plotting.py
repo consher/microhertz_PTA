@@ -205,7 +205,7 @@ def plot_plsc_EDensity(data_dir,plot_dir,NAME):
         # plotting style
         plt.style.use(['science','ieee','no-latex'])
         plt.rcParams['font.size'] = 12
-        fig = plt.figure(figsize=(6,8))
+        fig = plt.figure(1, figsize=(6,8))
         axes = fig.subplots(2,1)
     
         # plotting options
@@ -280,7 +280,7 @@ def plot_skymap_SNR(data_dir,plot_dir,NAME,plot_freq,strain):
     '''
 
     # plotting style
-    fig = plt.figure(1,figsize=(20,10))
+    fig = plt.figure(2,figsize=(20,10))
     plt.style.use(['science','ieee','no-latex'])
     plt.rcParams['font.size'] = 20
 
@@ -353,7 +353,7 @@ def plot_skymap_SNR(data_dir,plot_dir,NAME,plot_freq,strain):
     for i in range(0,4):
         hp.projview(
             skymap_snr_ar[i],
-            fig=1,
+            fig=2,
             sub=sub,
             projection_type="mollweide",
             coord='E',
@@ -395,7 +395,7 @@ def dsa_ska_plot(data_dir,plot_dir,NAME, strain, check_freq=False):
         check_freq  : check the frequency you are plotting on skymap
         '''
 
-    fig = plt.figure(1,figsize=(16,5))
+    fig = plt.figure(3,figsize=(16,5))
     plt.style.use(['science','ieee','no-latex'])
     plt.rcParams['font.size'] = 20
     axes = fig.subplots(1,2)
@@ -451,7 +451,7 @@ def dsa_ska_plot(data_dir,plot_dir,NAME, strain, check_freq=False):
     cbar_ticks = [0,1,2,3,4,5,6,7,8,9,10]
     hp.projview(
         snr,
-        fig=1,
+        fig=3,
         sub=122,
         projection_type="mollweide",
         coord='E',
