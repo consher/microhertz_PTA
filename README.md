@@ -9,4 +9,5 @@ This is the accompanying code for this paper [link]. We used the [`hasasia`](htt
 The directory `./data` contains:
 * `/new-physics_data`: contains new-physics data taken from [Blanco-Pillado & Olum (2017)](http://doi.org/10.1103/PhysRevD.96.104046) and [Renzini et al. (2022)](http://doi.org/10.3390/galaxies10010034). We get domain wall values from simulation papers (e.g. [Kawasaki & Saikawa 2011](http://doi.org/10.1088/1475-7516/2011/09/008)).
 * `/observatories`: observatory config `.json` files.
-* `/output_data`: output data from `sensitivity_curve.py`.
+
+Output data is written to a folder not in this repo, but can be accessed here.

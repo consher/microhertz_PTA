@@ -20,7 +20,7 @@ def main():
     catalog = psrcat(".")
     config_file = "./pta_config.json"
     observatory_params = "./data/observatories/"
-    output_dir ="../output_data/"
+    output_dir ="./output_data/"
 
     with open(config_file, 'r') as fp:
         pta_config = json.load(fp)

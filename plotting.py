@@ -20,7 +20,7 @@ YEAR = 365*DAY
 def main():
     # run desired plotting functions here
     plot_dir = "./plots"
-    data_dir = "../output_data"
+    data_dir = "./output_data"
     plot_skymap_SNR(data_dir, plot_dir,'mupta_skymap_omega_twin-campaign.pdf',plot_freq=1e-6, strain=8.9e-14)
     plot_plsc_EDensity(data_dir, plot_dir,"mupta_plsc_omega_twin-campaign.pdf")
     dsa_ska_plot(data_dir, plot_dir, "dsa-ska_plcurve-skymap.pdf",4.9e-14, check_freq=False)
