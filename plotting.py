@@ -20,8 +20,9 @@ YEAR = 365*DAY
 def main():
     # run desired plotting functions here
     plot_dir = "./plots"
-    plot_skymap_SNR(plot_dir,'mupta_skymap_omega_twin-campaign-snr.pdf',plot_freq=1e-6, strain=8.9e-14)
-    plot_plsc_EDensity(plot_dir,"mupta_plsc_omega_twin-campaign-x.pdf")
+    #plot_skymap_SNR(plot_dir,'mupta_skymap_omega_twin-campaign.pdf',plot_freq=1e-6, strain=8.9e-14)
+    #plot_plsc_EDensity(plot_dir,"mupta_plsc_omega_twin-campaign.pdf")
+    dsa_ska_plot(plot_dir, "dsa-ska_plcurve-skymap.pdf",4.9e-14, check_freq=False)
 # -------------
 
 def h_to_omega(f,h_c):
@@ -213,26 +214,32 @@ def plot_plsc_EDensity(plot_dir,NAME):
         ymax = 1e6
     
         # frequency and strain are the first and second indices respectively
-        mupta_scurve_wsrtA = np.loadtxt("data/output_data/mupta_scurve_2-1_wsrt.csv", delimiter=",")
-        mupta_scurve_fastA = np.loadtxt("data/output_data/mupta_scurve_2-1_fast.csv", delimiter=",")
-        mupta_scurve_wsrtB = np.loadtxt("data/output_data/mupta_scurve_4-2_wsrt.csv", delimiter=",")
-        mupta_scurve_fastB = np.loadtxt("data/output_data/mupta_scurve_4-2_fast.csv", delimiter=",")
+        mupta_plcurve_wsrtA = np.loadtxt("data/output_data/mupta_plcurve_2-1_wsrt.csv", delimiter=",")
+        mupta_plcurve_fastA = np.loadtxt("data/output_data/mupta_plcurve_2-1_fast.csv", delimiter=",")
+        mupta_plcurve_wsrtB = np.loadtxt("data/output_data/mupta_plcurve_4-2_wsrt.csv", delimiter=",")
+        mupta_plcurve_fastB = np.loadtxt("data/output_data/mupta_plcurve_4-2_fast.csv", delimiter=",")
         epta_scurve  = np.loadtxt("data/output_data/epta_scurve.csv", delimiter=",")
     
         # convert from characteristic strain to omega
-        mupta_scurve_wsrtA = [mupta_scurve_wsrtA[0], h_to_omega(mupta_scurve_wsrtA[0],mupta_scurve_wsrtA[1]), h_to_omega(mupta_scurve_wsrtA[0],mupta_scurve_wsrtA[2]), h_to_omega(mupta_scurve_wsrtA[0],mupta_scurve_wsrtA[3])]
-        mupta_scurve_fastA = [mupta_scurve_fastA[0], h_to_omega(mupta_scurve_fastA[0],mupta_scurve_fastA[1]), h_to_omega(mupta_scurve_fastA[0],mupta_scurve_fastA[2]), h_to_omega(mupta_scurve_fastA[0],mupta_scurve_fastA[3])]
+        mupta_plcurve_wsrtA = [mupta_plcurve_wsrtA[0], h_to_omega(mupta_plcurve_wsrtA[0],mupta_plcurve_wsrtA[1]), h_to_omega(mupta_plcurve_wsrtA[0],mupta_plcurve_wsrtA[2]), h_to_omega(mupta_plcurve_wsrtA[0],mupta_plcurve_wsrtA[3])]
+        mupta_plcurve_fastA = [mupta_plcurve_fastA[0], h_to_omega(mupta_plcurve_fastA[0],mupta_plcurve_fastA[1]), h_to_omega(mupta_plcurve_fastA[0],mupta_plcurve_fastA[2]), h_to_omega(mupta_plcurve_fastA[0],mupta_plcurve_fastA[3])]
         epta_scurve       = [epta_scurve[0], h_to_omega(epta_scurve[0],epta_scurve[1]), h_to_omega(epta_scurve[0],epta_scurve[2]), h_to_omega(epta_scurve[0],epta_scurve[3])]
-        mupta_scurve_wsrtB = [mupta_scurve_wsrtB[0], h_to_omega(mupta_scurve_wsrtB[0],mupta_scurve_wsrtB[1]), h_to_omega(mupta_scurve_wsrtB[0],mupta_scurve_wsrtB[2]), h_to_omega(mupta_scurve_wsrtB[0],mupta_scurve_wsrtB[3])]
-        mupta_scurve_fastB = [mupta_scurve_fastB[0], h_to_omega(mupta_scurve_fastB[0],mupta_scurve_fastB[1]), h_to_omega(mupta_scurve_fastB[0],mupta_scurve_fastB[2]), h_to_omega(mupta_scurve_fastB[0],mupta_scurve_fastB[3])]
+        mupta_plcurve_wsrtB = [mupta_plcurve_wsrtB[0], h_to_omega(mupta_plcurve_wsrtB[0],mupta_plcurve_wsrtB[1]), h_to_omega(mupta_plcurve_wsrtB[0],mupta_plcurve_wsrtB[2]), h_to_omega(mupta_plcurve_wsrtB[0],mupta_plcurve_wsrtB[3])]
+        mupta_plcurve_fastB = [mupta_plcurve_fastB[0], h_to_omega(mupta_plcurve_fastB[0],mupta_plcurve_fastB[1]), h_to_omega(mupta_plcurve_fastB[0],mupta_plcurve_fastB[2]), h_to_omega(mupta_plcurve_fastB[0],mupta_plcurve_fastB[3])]
+
+        print("\nTelescope\tCampaign\tMin Omega_gw")
+        print(f"WSRT\t\tA\t\t{np.min(mupta_plcurve_wsrtA[2])}")
+        print(f"WSRT\t\tB\t\t{np.min(mupta_plcurve_wsrtB[2])}")
+        print(f"FAST\t\tA\t\t{np.min(mupta_plcurve_fastA[2])}")
+        print(f"FAST\t\tB\t\t{np.min(mupta_plcurve_fastB[2])}\n")
 
         # plots for Campaign A (2 TOAs per PSR, T_obs = 1yr)
-        axes[0].loglog(mupta_scurve_wsrtA[0], mupta_scurve_wsrtA[2],linestyle='-',color="#73ab57",lw=1.5) # SNR = 5 plot of WSRT
-        axes[0].loglog(mupta_scurve_fastA[0], mupta_scurve_fastA[2],linestyle='-',color="#B50707",lw=1.5) # SNR = 5 plot of FAST
+        axes[0].loglog(mupta_plcurve_wsrtA[0], mupta_plcurve_wsrtA[2],linestyle='-',color="#73ab57",lw=1.5) # SNR = 5 plot of WSRT
+        axes[0].loglog(mupta_plcurve_fastA[0], mupta_plcurve_fastA[2],linestyle='-',color="#B50707",lw=1.5) # SNR = 5 plot of FAST
 
         # plots for Campaign B (4 TOAs per PSR, T_obs = 2yr)
-        axes[1].loglog(mupta_scurve_wsrtB[0], mupta_scurve_wsrtB[2],linestyle='-',color='#73ab57',lw=1.5) # SNR = 5 plot of WSRT
-        axes[1].loglog(mupta_scurve_fastB[0], mupta_scurve_fastB[2],linestyle='-',color="#B50707",lw=1.5) # SNR = 5 plot of FAST
+        axes[1].loglog(mupta_plcurve_wsrtB[0], mupta_plcurve_wsrtB[2],linestyle='-',color='#73ab57',lw=1.5) # SNR = 5 plot of WSRT
+        axes[1].loglog(mupta_plcurve_fastB[0], mupta_plcurve_fastB[2],linestyle='-',color="#B50707",lw=1.5) # SNR = 5 plot of FAST
 
         # apply to both plots
         for ax in axes:
@@ -244,8 +251,8 @@ def plot_plsc_EDensity(plot_dir,NAME):
             plot_dw_spectra(ax, nbins=1000, fill=True, color="#1D5C28") # plot domain wall spectrum with 1000 frequency bins
             ax.annotate("$T_\\text{ann}\\sim1$ GeV", xy=(4e-5,1e-13), color='#1D5C28')
 
-            ax.text(mupta_scurve_wsrtB[0][-220], mupta_scurve_wsrtB[2][-100], "WSRT", color="#73ab57")
-            ax.text(mupta_scurve_fastB[0][-25], mupta_scurve_fastB[2][-80], "FAST", color="#B50707")
+            ax.text(mupta_plcurve_wsrtB[0][-220], mupta_plcurve_wsrtB[2][-100], "WSRT", color="#73ab57")
+            ax.text(mupta_plcurve_fastB[0][-25], mupta_plcurve_fastB[2][-80], "FAST", color="#B50707")
 
             ax.loglog(epta_scurve[0], epta_scurve[2],linestyle='-',color="#9437db",lw=1.5,label='EPTA Benchmark') # SNR = 5 plot of EPTA DR2
         
@@ -281,8 +288,8 @@ def plot_skymap_SNR(plot_dir,NAME,plot_freq,strain):
     skymap_fast_A = np.loadtxt("data/output_data/mupta_skymap_2-1_fast.csv", delimiter=",")
     skymap_wsrt_B = np.loadtxt("data/output_data/mupta_skymap_4-2_wsrt.csv", delimiter=",")
     skymap_fast_B = np.loadtxt("data/output_data/mupta_skymap_4-2_fast.csv", delimiter=",")
-    psr_coords  = np.loadtxt("data/output_data/psr_coords.csv", delimiter=",")
-    sky_coords  = np.loadtxt("data/output_data/sky_coords.csv", delimiter=",")
+    psr_coords  = np.loadtxt("data/output_data/mupta_psr_coords.csv", delimiter=",")
+    sky_coords  = np.loadtxt("data/output_data/mupta_sky_coords.csv", delimiter=",")
     #freqs  = np.loadtxt("data/output_data/freqrange.csv", delimiter=",")
 
     # calculate index of skymap matching desired frequency; 20=1e-8, 30=1e-7, 40=1e-6,... 
@@ -320,11 +327,11 @@ def plot_skymap_SNR(plot_dir,NAME,plot_freq,strain):
     # Transform to equatorial coordinates
     theta_min_deg   = np.rad2deg(theta_min)
     phi_min_deg     = np.rad2deg(phi_min)
-
     ecliptic_coord = SkyCoord(lat=theta_min_deg*u.degree, lon=phi_min_deg*u.degree, frame='barycentrictrueecliptic')
     equatorial_coord = ecliptic_coord.transform_to('icrs')
 
     # print the direction of best-sensitivity
+    print("\nSky-Map Optimal Direction:")
     print('Ecliptic\t {0:2.1f} degrees N, {1:2.1f} degrees E'.format(theta_min_deg,phi_min_deg))
     print('Equatorial\t RA {0:2.1f}, DEC {1:2.1f}'.format(equatorial_coord.ra,equatorial_coord.dec))
 
@@ -377,6 +384,109 @@ def plot_skymap_SNR(plot_dir,NAME,plot_freq,strain):
 
     plt.savefig(f"{plot_dir}/{NAME}")
 
+def dsa_ska_plot(plot_dir,NAME, strain, check_freq=False):
+    '''
+        Plots power-law sensitivity curve and skymap of DSA + SKA-Mid PTA
+        
+        plot_dir    : plot output
+        NAME        : name of output plot (excluding .pdf suffix)
+        strain      : desired strain to calculate SNR of for skymap
+        check_freq  : check the frequency you are plotting on skymap
+        '''
+
+    fig = plt.figure(1,figsize=(16,5))
+    plt.style.use(['science','ieee','no-latex'])
+    plt.rcParams['font.size'] = 20
+    axes = fig.subplots(1,2)
+
+    # plotting options
+    fmin = 1e-9
+    fmax = 1e-3
+    ymin = 1e-15
+    ymax = 1e6
+
+    # number of pulsars
+    npsr = 24
+    Tobs = 2
+
+    # load data
+    mupta_plcurve_fastB     = np.loadtxt("data/output_data/mupta_plcurve_4-2_fast.csv", delimiter=",")
+    freqs, dsa_ska_plcurve  = np.loadtxt("data/output_data/dsa-ska_plcurve.csv", delimiter=",")
+    dsa_ska_skymap          = np.loadtxt("data/output_data/dsa-ska_skymap.csv", delimiter=",")
+    psr_coords              = np.loadtxt("data/output_data/dsa-ska_psrs.csv", delimiter=",")
+
+    # plot the FAST campaign B and DSA+SKA PL curve
+    axes[0].loglog(freqs, dsa_ska_plcurve,linestyle='-',color="#EF78EF",lw=1.5,label="DSA + SKA-Mid") 
+    axes[0].loglog(mupta_plcurve_fastB[0], h_to_omega(mupta_plcurve_fastB[0],mupta_plcurve_fastB[2]),linestyle='-',color="#B50707",lw=1.5, label="FAST Campaign B")
+
+
+    # plot New-Physics targets
+    plot_fopt_spectra(axes[0], T=['200MeV'], fill=True, color="#1C2320") # plot first order phase transition
+    axes[0].annotate(("$T_*\\sim 200$ MeV"), xy=(1e-7,5e-13), color="#1C2320")
+    plot_cs_spectra(axes[0], [-10], fill=True, color="#606060") # plot cosmic string background spectra
+    axes[0].annotate(("$G\\mu\\sim10^{-10}$"), xy=(5e-5,5e-9), color="#606060")
+    plot_dw_spectra(axes[0], nbins=1000, fill=True, color="#1D5C28") # plot domain wall spectrum with 1000 frequency bins
+    axes[0].annotate("$T_\\text{ann}\\sim1$ GeV", xy=(4e-5,1e-13), color='#1D5C28')
+
+    # misc axis settings
+    axes[0].set_xlabel('Frequency $f_\\text{gw}$ [Hz]',)
+    axes[0].set_ylabel('Energy Density $\\Omega_\\text{gw}$')
+    axes[0].set_xlim(fmin,fmax)
+    axes[0].set_ylim(ymin,ymax)
+    # rearrange legend items to new order for aesthetic purposesß
+    handles, labels = axes[0].get_legend_handles_labels() 
+    order = [0,1,2,3,4]   
+    axes[0].legend([handles[idx] for idx in order], [labels[idx] for idx in order], loc='upper left')
+
+    axes[1].axis('off') # turn off square axes
+
+    # get desired frequency to plot skymap of and optionally check
+    fidx = 351
+    if check_freq == True:
+        print(f"Skymap Freq = {freqs[fidx]:.2e} Hz")
+
+    snr = strain * np.sqrt(Tobs*YEAR/dsa_ska_skymap[fidx]) # compute SNR for given strain
+
+    cbar_ticks = [0,1,2,3,4,5,6,7,8,9,10]
+    hp.projview(
+        snr,
+        fig=1,
+        sub=122,
+        projection_type="mollweide",
+        coord='E',
+        #graticule_coord='E',
+        cmap="plasma",
+        unit="$\\rho$",
+        norm="linear",
+        title="DSA + SKA-Mid\n$\\rho_\\text{max}=$"+f"{np.max(snr):.2f}", 
+        cbar=True,
+        cb_orientation="vertical",
+        show_tickmarkers=False,
+        cbar_ticks=cbar_ticks,
+        graticule=True,
+        graticule_labels=True,
+        graticule_color='k',
+        longitude_grid_spacing=30, 
+        latitude_grid_spacing=30,
+        custom_xtick_labels=[f"{int(-1*i)}$^\\circ$" for i in np.linspace(-150,150,11)],
+        custom_ytick_labels=[f"{int(i)}$^\\circ$" for i in np.linspace(-60,60,5)],
+        flip="astro",
+        fontsize={"cbar_label":18, "cbar_tick_label":16}
+    )
+
+    # format the pulsar coordinates to show correctly on the plot
+    for i in range(npsr):
+        if(psr_coords[0,i] >= 0):
+            psr_coords[0,i] = np.pi/2. - abs(psr_coords[0,i]) # add latitude to pi/2 to be below ecliptic
+        elif(psr_coords[0,i] < 0):
+            psr_coords[0,i] = np.pi/2. + abs(psr_coords[0,i]) # subtract latitude to pi/2 to be below ecliptic
+        if(psr_coords[1,i] > np.pi and psr_coords[1,i] < 2*np.pi):
+            psr_coords[1,i] -= 2*np.pi # subtract 2*pi from any angle in the range [pi, 2*pi] to keep in bounds
+
+    # overplot pulsar locations using modified psr_coords
+    hp.newprojplot(psr_coords[0,:], psr_coords[1,:], "w*", markersize=12, markeredgecolor="k")
+
+    plt.savefig(f"{plot_dir}/{NAME}")
 
 
 if __name__ == "__main__":

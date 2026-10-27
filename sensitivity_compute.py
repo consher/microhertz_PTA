@@ -1,6 +1,4 @@
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 import json
 import hasasia.sensitivity as hasen
 import hasasia.sim as hasim
@@ -8,7 +6,7 @@ from atnf_pull import psrcat
 import hasasia.skymap as hasky
 import healpy as hp
 import astropy.units as u
-import astropy.constants as c
+from astropy.coordinates import SkyCoord
 
 HUBBLE = 67.66*(1e3/3.0857e+22) # Hubble constant (from Planck 2018)
 H = 0.6766 # the reduced hubble constant H0/100
@@ -32,7 +30,7 @@ def main():
     toa_int = pta_config["toa_int"]   # seconds, integration time to create one ToA
 
     # naming convention
-    scurve_filename = f"mupta_scurve_{cadence}-{Tobs}" # output namestem for the sensitivity curves
+    scurve_filename = f"mupta_plcurve_{cadence}-{Tobs}" # output namestem for the sensitivity curves
     skymap_filename = f"mupta_skymap_{cadence}-{Tobs}" # output namestem for the sky maps
 
     # get observatory parameters
@@ -82,10 +80,10 @@ def main():
     np.savetxt("data/output_data/"+skymap_filename+"_wsrt.csv", skymap_hc, delimiter=",")
 
     # save psr coordinates
-    np.savetxt("data/output_data/psr_coords.csv", psr_coords, delimiter=",")
+    np.savetxt("data/output_data/mupta_psr_coords.csv", psr_coords, delimiter=",")
 
     # save sky coordinates
-    np.savetxt("data/output_data/sky_coords.csv", sky_coords, delimiter=",")
+    np.savetxt("data/output_data/mupta_sky_coords.csv", sky_coords, delimiter=",")
 
     # save frequency range
     np.savetxt("data/output_data/freqrange.csv", skymap_freqs, delimiter=",")
@@ -95,6 +93,15 @@ def main():
 
     # possesses the same coords and freq range as WSRT, so just save FAST skymap array to csv
     np.savetxt("data/output_data/"+skymap_filename+"_fast.csv", skymap_hc, delimiter=",")
+
+
+    # DSA-SKA data
+    dsa_ska_plcurve, dsa_ska_psrs, dsa_ska_skymap = ska_dsa_pta()
+
+    # save dsa-ska curve data
+    np.savetxt("data/output_data/dsa-ska_plcurve.csv", dsa_ska_plcurve, delimiter=',')
+    np.savetxt("data/output_data/dsa-ska_skymap.csv", dsa_ska_skymap, delimiter=',')
+    np.savetxt("data/output_data/dsa-ska_psrs.csv", dsa_ska_psrs, delimiter=',')
 
 
 
@@ -230,14 +237,66 @@ def sky_sens(psr_list: list, Tobs: int, cadence: int, rmserr):
 
     # swap axes to get desired format
     skymap_Seff = np.swapaxes(np.asarray([(skymap.S_effSky[:,i]) for i in range(NPIX)]) ,0,1)
-    #skymap_Seff = skymap.S_effSky
 
     # return the locations of each pulsar, the array of sy coordinates, the frequency array and the power spectral density skymap
     return np.asarray([theta, phi]), np.asarray([theta_gw, phi_gw]), freqs, skymap_Seff
 
-def ska_dsa_curve():
+def ska_dsa_pta():
+    # number of pulsars to observe with each
+    npsr_dsa = 12
+    npsr_ska = 12
+    err_dsa = 35e-9 # dsa radiometer error 
+    err_ska = 35e-9 # ska radioemeter error
+    Tobs = 2 # years
+    cad = 1 # per day
+    snr = 5 # snr value
 
-    return 0
+    # generate random sky positions on ecltipic for all pulsars
+    phi = np.random.uniform(0, 2*np.pi,size=(npsr_dsa+npsr_ska))
+    theta = np.empty(npsr_dsa+npsr_ska)
+    theta[0:npsr_dsa] = np.random.uniform(0, np.pi/2, size=npsr_ska)
+    theta[npsr_dsa:] = np.random.uniform(-np.pi/2, 0, size=npsr_ska)
+
+    # assign error array
+    err = np.zeros(npsr_ska+npsr_dsa)
+    err[0:npsr_dsa] += err_dsa
+    err[npsr_dsa:] += err_ska
+
+    nbins = 500 # number of frequency bins
+    freqs = np.logspace(np.log10(1/(Tobs*YEAR)),np.log10((cad*365*Tobs)/(2*Tobs*YEAR)),nbins) # frequency range [1/Tobs, nToAs/2Tobs]
+
+    # create PTA sim adding desired noise
+    pta  = hasim.sim_pta(timespan=Tobs,  cad=cad*365, sigma=err, phi=phi, theta=theta, freqs=freqs)
+    
+    spectra = []
+    for psr in pta:
+        sptrm = hasen.Spectrum(psr, freqs=freqs)
+        sptrm.NcalInv # computes inverse-noise-weighted transmission function for each pulsar
+        spectra.append(sptrm)
+
+    # compute sensitivty curve
+    senscurve = hasen.GWBSensitivityCurve(spectra)
+
+    # compute the strain amplitude power law curve, N is number of spectral indices sampled
+    pl_curve, powerlaw = hasen.PI_hc(freqs=senscurve.freqs, Tspan=senscurve.Tspan, SNR=snr, S_eff=senscurve.S_eff, N=30)
+
+
+    NSIDE = 32
+    NPIX = hp.nside2npix(NSIDE)
+    IPIX = np.arange(NPIX)
+    theta_gw, phi_gw = hp.pix2ang(nside=NSIDE,ipix=IPIX)
+
+    # create skymap
+    skymap = hasky.SkySensitivity(spectra, theta_gw, phi_gw)
+    
+    # swap axes to get desired format
+    skymap_Seff = np.swapaxes(np.asarray([(skymap.S_effSky[:,i]) for i in range(NPIX)]) ,0,1)
+
+    # convert to energy density
+    return [freqs, (2 * np.pi**2) / (3 * HUBBLE**2) * (freqs**2) * (pl_curve**2)], [theta, phi], skymap_Seff
+    
+
+    
 
 if __name__ == "__main__":
     main()
