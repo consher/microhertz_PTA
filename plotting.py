@@ -219,7 +219,7 @@ def plot_plsc_EDensity(data_dir,plot_dir,NAME):
         mupta_plcurve_fastA = np.loadtxt(data_dir+"/mupta_plcurve_2-1_fast.csv", delimiter=",")
         mupta_plcurve_wsrtB = np.loadtxt(data_dir+"/mupta_plcurve_4-2_wsrt.csv", delimiter=",")
         mupta_plcurve_fastB = np.loadtxt(data_dir+"/mupta_plcurve_4-2_fast.csv", delimiter=",")
-        epta_scurve  = np.loadtxt(data_dir+"/epta_scurve.csv", delimiter=",")
+        epta_scurve  = np.loadtxt(data_dir+"/epta_plcurve.csv", delimiter=",")
     
         # convert from characteristic strain to omega
         mupta_plcurve_wsrtA = [mupta_plcurve_wsrtA[0], h_to_omega(mupta_plcurve_wsrtA[0],mupta_plcurve_wsrtA[1]), h_to_omega(mupta_plcurve_wsrtA[0],mupta_plcurve_wsrtA[2]), h_to_omega(mupta_plcurve_wsrtA[0],mupta_plcurve_wsrtA[3])]
@@ -414,7 +414,7 @@ def dsa_ska_plot(data_dir,plot_dir,NAME, strain, check_freq=False):
     mupta_plcurve_fastB     = np.loadtxt(data_dir+"/mupta_plcurve_4-2_fast.csv", delimiter=",")
     freqs, dsa_ska_plcurve  = np.loadtxt(data_dir+"/dsa-ska_plcurve.csv", delimiter=",")
     dsa_ska_skymap          = np.loadtxt(data_dir+"/dsa-ska_skymap.csv", delimiter=",")
-    psr_coords              = np.loadtxt(data_dir+"/dsa-ska_psrs.csv", delimiter=",")
+    psr_coords              = np.loadtxt(data_dir+"/dsa-ska_psr_coords.csv", delimiter=",")
 
     # plot the FAST campaign B and DSA+SKA PL curve
     axes[0].loglog(freqs, dsa_ska_plcurve,linestyle='-',color="#EF78EF",lw=1.5,label="DSA + SKA-Mid") 
