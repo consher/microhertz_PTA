@@ -6,4 +6,4 @@ __pycache__/
 output_data/
 
 # plots
-plots/*
+plots/
