@@ -1,8 +1,8 @@
 {
     "site" : "FAST", 
-    "obs_freq" : 340 , 
-    "T_ant" : 125, 
+    "obs_freq" : 1400, 
+    "T_sys" : 50, 
     "npol" : 2, 
-    "bw" : 10e6, 
-    "Aeff" : 44532
+    "bw" : 500e6, 
+    "Aeff" : 35340
 }

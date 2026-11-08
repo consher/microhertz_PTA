@@ -1,8 +1,8 @@
 {
     "site" : "wsrt", 
-    "obs_freq" : 340 , 
-    "T_ant" : 125, 
+    "obs_freq" : 340, 
+    "T_sys" : 250, 
     "npol" : 2, 
-    "bw" : 10e6, 
-    "Aeff" : 2760
+    "bw" : 70e6, 
+    "Aeff" : 2750
 }

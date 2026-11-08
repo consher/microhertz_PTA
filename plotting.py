@@ -21,9 +21,9 @@ def main():
     # run desired plotting functions here
     plot_dir = "./plots"
     data_dir = "./output_data"
-    plot_skymap_SNR(data_dir, plot_dir,'mupta_skymap_omega_twin-campaign.pdf',plot_freq=1e-6, strain=8.9e-14)
+    plot_skymap_SNR(data_dir, plot_dir,'mupta_skymap_omega_twin-campaign.pdf',plot_freq=1e-6, snr=5)
     plot_plsc_EDensity(data_dir, plot_dir,"mupta_plsc_omega_twin-campaign.pdf")
-    dsa_ska_plot(data_dir, plot_dir, "dsa-ska_plcurve-skymap.pdf",4.9e-14, check_freq=False)
+    dsa_ska_plot(data_dir, plot_dir, "dsa-ska_plcurve-skymap.pdf", snr=5, check_freq=False)
 # -------------
 
 def h_to_omega(f,h_c):
@@ -269,7 +269,7 @@ def plot_plsc_EDensity(data_dir,plot_dir,NAME):
 
         plt.savefig(f"{plot_dir}/{NAME}")
 
-def plot_skymap_SNR(data_dir,plot_dir,NAME,plot_freq,strain):
+def plot_skymap_SNR(data_dir,plot_dir,NAME,plot_freq,snr=5):
     '''
     Plots skymap singal-to-noise ratio for a given strain
     
@@ -333,35 +333,35 @@ def plot_skymap_SNR(data_dir,plot_dir,NAME,plot_freq,strain):
 
     # print the direction of best-sensitivity
     print("\nSky-Map Optimal Direction:")
-    print('Ecliptic\t {0:2.1f} degrees N, {1:2.1f} degrees E'.format(theta_min_deg,phi_min_deg))
+    print('Ecliptic\t LAT {0:2.1f} degrees, LONG {1:2.1f} degrees'.format(theta_min_deg,(phi_min_deg)%360))
     print('Equatorial\t RA {0:2.1f}, DEC {1:2.1f}'.format(equatorial_coord.ra,equatorial_coord.dec))
 
     # compute snr for a given strain
     T_obsA = 1*YEAR
     T_obsB = 2*YEAR
-    snr_wsrt_A = strain * np.sqrt(T_obsA/skymap_wsrt_A[skymap_freq_idx])
-    snr_wsrt_B = strain * np.sqrt(T_obsB/skymap_wsrt_B[skymap_freq_idx])
-    snr_fast_A = strain * np.sqrt(T_obsA/skymap_fast_A[skymap_freq_idx])
-    snr_fast_B = strain * np.sqrt(T_obsB/skymap_fast_B[skymap_freq_idx])
+    strain_wsrt_A = snr * np.sqrt(skymap_wsrt_A[skymap_freq_idx]/T_obsA) 
+    strain_wsrt_B = snr * np.sqrt(skymap_wsrt_B[skymap_freq_idx]/T_obsB)
+    strain_fast_A = snr * np.sqrt(skymap_fast_A[skymap_freq_idx]/T_obsA)
+    strain_fast_B = snr * np.sqrt(skymap_fast_B[skymap_freq_idx]/T_obsB)
 
     # plot molleide projection of for each campaign A & B and for each telescope WSRT & FAST
     sub = 221
-    skymap_snr_ar = [snr_wsrt_A,snr_wsrt_B,snr_fast_A,snr_fast_B]
+    skymap_strain_ar = [strain_wsrt_A,strain_wsrt_B,strain_fast_A,strain_fast_B]
     skymap_title_ar = ["WSRT Campaign A", "WSRT Campaign B", "FAST Campaign A", "FAST Campaign B"]
-    cbar_tick_ar = [[0,1,2,3,4,5],[0,1,2,3,4,5],[0,1,2,3,4,5],[0,1,2,3,4,5]]
+    cbar_tick_ar = [[1e-14,1e-13,1e-12] for i in range(4)] # can have unique colour bar ranges for each plot or the same
 
     for i in range(0,4):
         hp.projview(
-            skymap_snr_ar[i],
+            skymap_strain_ar[i],
             fig=2,
             sub=sub,
             projection_type="mollweide",
             coord='E',
             #graticule_coord='E',
-            cmap="plasma",
-            unit="$\\rho$",
-            norm="linear",
-            title=skymap_title_ar[i]+"\n$\\rho_\\text{max}=$"+f"{np.max(skymap_snr_ar[i]):.2f}", 
+            cmap="plasma_r",
+            unit="$\\text{log}_{10}(h)$",
+            norm="log",
+            title=skymap_title_ar[i]+"\n$h_\\text{min}=$"+f"{np.min(skymap_strain_ar[i]):.2e}",
             cbar=True,
             cb_orientation="vertical",
             show_tickmarkers=False,
@@ -371,11 +371,17 @@ def plot_skymap_SNR(data_dir,plot_dir,NAME,plot_freq,strain):
             graticule_color='k',
             longitude_grid_spacing=30, 
             latitude_grid_spacing=30,
-            custom_xtick_labels=[f"{int(-1*i)}$^\\circ$" for i in np.linspace(-150,150,11)],
+            custom_xtick_labels=[f"{int(i)}$^\\circ$" for i in np.linspace(330,30,11)],
             custom_ytick_labels=[f"{int(i)}$^\\circ$" for i in np.linspace(-60,60,5)],
             flip="astro",
             fontsize={"cbar_label":18, "cbar_tick_label":16}
         )
+
+        # format colorbar labels
+        cb = plt.gca().collections[-1].colorbar # retrieve colorbar object
+        cb.ax.set_yscale('log')
+        cb.update_ticks() 
+        cb.ax.set_yticklabels([f"${int(np.log10(x))}$" for x in cbar_tick_ar[i]]) # convert colorbar labels to just the power indices
 
         # overplot pulsar locations using modified psr_coords
         hp.newprojplot(psr_coords[0,:], psr_coords[1,:], "w*", markersize=12, markeredgecolor="k")
@@ -385,7 +391,7 @@ def plot_skymap_SNR(data_dir,plot_dir,NAME,plot_freq,strain):
 
     plt.savefig(f"{plot_dir}/{NAME}")
 
-def dsa_ska_plot(data_dir,plot_dir,NAME, strain, check_freq=False):
+def dsa_ska_plot(data_dir,plot_dir,NAME, snr, check_freq=False):
     '''
         Plots power-law sensitivity curve and skymap of DSA + SKA-Mid PTA
         
@@ -446,20 +452,21 @@ def dsa_ska_plot(data_dir,plot_dir,NAME, strain, check_freq=False):
     if check_freq == True:
         print(f"Skymap Freq = {freqs[fidx]:.2e} Hz")
 
-    snr = strain * np.sqrt(Tobs*YEAR/dsa_ska_skymap[fidx]) # compute SNR for given strain
+    strain = snr * np.sqrt(dsa_ska_skymap[fidx]/(Tobs*YEAR)) # compute strain for given SNR
 
-    cbar_ticks = [0,1,2,3,4,5,6,7,8,9,10]
+    cbar_ticks = [1e-14,1e-13,1e-12]
+
     hp.projview(
-        snr,
+        strain,
         fig=3,
         sub=122,
         projection_type="mollweide",
         coord='E',
         #graticule_coord='E',
-        cmap="plasma",
-        unit="$\\rho$",
-        norm="linear",
-        title="DSA + SKA-Mid\n$\\rho_\\text{max}=$"+f"{np.max(snr):.2f}", 
+        cmap="plasma_r",
+        unit="$\\text{log}_{10}(h)$",
+        norm="log",
+        title="DSA+SKA-Mid Campaign C\n$h_\\text{min}=$"+f"{np.min(strain):.2e}", 
         cbar=True,
         cb_orientation="vertical",
         show_tickmarkers=False,
@@ -469,11 +476,17 @@ def dsa_ska_plot(data_dir,plot_dir,NAME, strain, check_freq=False):
         graticule_color='k',
         longitude_grid_spacing=30, 
         latitude_grid_spacing=30,
-        custom_xtick_labels=[f"{int(-1*i)}$^\\circ$" for i in np.linspace(-150,150,11)],
+        custom_xtick_labels=[f"{int(i)}$^\\circ$" for i in np.linspace(330,30,11)],
         custom_ytick_labels=[f"{int(i)}$^\\circ$" for i in np.linspace(-60,60,5)],
         flip="astro",
         fontsize={"cbar_label":18, "cbar_tick_label":16}
     )
+
+    # format colorbar labels
+    cb = plt.gca().collections[-1].colorbar # retrieve colorbar object
+    cb.ax.set_yscale('log')
+    cb.update_ticks() 
+    cb.ax.set_yticklabels([f"${int(np.log10(x))}$" for x in cbar_ticks]) # convert colorbar labels to just the power indices
 
     # format the pulsar coordinates to show correctly on the plot
     for i in range(npsr):

@@ -41,8 +41,8 @@ def main():
         fast_params = json.load(fp)
 
     # compute rms error array for WSRT and FAST
-    rmserr_wsrt = np.array([rms_error(wsrt_params, catalog.get(psr), toa_int) for psr in psr_list], dtype=float)
-    rmserr_fast = np.array([rms_error(fast_params, catalog.get(psr), toa_int) for psr in psr_list], dtype=float)
+    rmserr_wsrt = np.array([rms_error(wsrt_params, catalog.get(psr), toa_int, Si="S400") for psr in psr_list], dtype=float)
+    rmserr_fast = np.array([rms_error(fast_params, catalog.get(psr), toa_int, Si="S1400") for psr in psr_list], dtype=float)
 
     #  -- WSRT --
     # scurve opject has frequency in first index and SNR 1, 5, 10 sensitivity curve in second third and fourth index respectively
@@ -102,7 +102,7 @@ def main():
     # save dsa-ska curve data
     np.savetxt(output_dir+"dsa-ska_plcurve.csv", dsa_ska_plcurve, delimiter=',')
     np.savetxt(output_dir+"dsa-ska_skymap.csv", dsa_ska_skymap, delimiter=',')
-    np.savetxt(output_dir+"dsa-ska_psrs.csv", dsa_ska_psrs, delimiter=',')
+    np.savetxt(output_dir+"dsa-ska_psr_coords.csv", dsa_ska_psrs, delimiter=',')
 
 
 
@@ -154,7 +154,7 @@ def gwb_PLSC(psr_list: list, Tobs: int, cadence: int, snr: int, rmserr):
 
 
 
-def rms_error(tel_terms: dict, pulsar_terms: dict, t_int:float, T_sky = 125, beta = 1.25):
+def rms_error(tel_terms: dict, pulsar_terms: dict, t_int:float, Si="S400", beta = 1.25):
     """
     Compute rms error from observatory (in seconds) using the relation toa_err ~ pulse_width/SNR
     See source code for list of required terms
@@ -162,24 +162,23 @@ def rms_error(tel_terms: dict, pulsar_terms: dict, t_int:float, T_sky = 125, bet
     tel_terms :      A dictionary object containing the relavent telescope properties
     pulsar_terms :   A dictionary containing the relavent pulsar properties
     t_int :          A float of the amount of observation time to create a single ToA
-    T_sky :          Sky temperature in K
-    X :              Some factor accounting for your choice in pulse width (default is 1.25 as per Evan Keane's guesstimate)
+    Si :             The flux for a given frequency to take from PSR catalog (e.g 'S400' for 400MHz, 'S1400' for 1400MHz, etc.), default = 'S400'
+    beta :           Some factor accounting for your choice in pulse width (default is 1.25 as per Evan Keane's guesstimate)
     """
     Kb = 1.3806503e-23 # boltzmann constant
 
     # telescope terms
-    T_ant   = tel_terms['T_ant']    # system temp (K)
+    T_sys   = tel_terms['T_sys']     # system temp (K)
     Aeff    = tel_terms['Aeff']      # effective area of telescope (m^2) 
     n_pol   = tel_terms['npol']      # number of polarisations (x and y)
-    bw      = tel_terms['bw']          # observing bandwidth (Hz)
+    bw      = tel_terms['bw']        # observing bandwidth (Hz)
 
     # pulsar terms
-    w_50    = float(pulsar_terms['W50']) * 1e-3                # pulsar width at 50 percent of maximum (given in ms but converted to s)
-    p       = float(pulsar_terms['P0'])                            # period (s)
-    S_mean  = float(pulsar_terms['S400']) * 1e-3 * 1e-26     # mean intensity at obs frequency (400MHz) (given in mJy, converted first to Jy and then to SI units)
+    w_50    = float(pulsar_terms['W50']) * 1e-3          # pulsar width at 50 percent of maximum (given in ms but converted to s)
+    p       = float(pulsar_terms['P0'])                  # period (s)
+    S_mean  = float(pulsar_terms[Si]) * 1e-3 * 1e-26     # mean intensity at obs frequency (400MHz) (given in mJy, converted first to Jy and then to SI units)
 
     duty    = w_50/p                       # duty cycle
-    T_sys   = T_sky + T_ant                   # total temp
     G       = Aeff / (2 * Kb)                 # compute the gain
 
     # derived from radiometer equation and sigma_toa ~ width / SNR
@@ -203,7 +202,6 @@ def sky_sens(psr_list: list, Tobs: int, cadence: int, rmserr):
 
     phi = np.empty(npsrs)
     theta = np.empty(npsrs)
-    err = np.empty(npsrs)
 
     for i in range(npsrs):
 
@@ -246,22 +244,20 @@ def ska_dsa_pta():
     # number of pulsars to observe with each
     npsr_dsa = 12
     npsr_ska = 12
-    err_dsa = 35e-9 # dsa radiometer error 
-    err_ska = 35e-9 # ska radioemeter error
+    err = 50e-9 # dsa/ska radiometer error 
     Tobs = 2 # years
     cad = 1 # per day
     snr = 5 # snr value
 
     # generate random sky positions on ecltipic for all pulsars
     phi = np.random.uniform(0, 2*np.pi,size=(npsr_dsa+npsr_ska))
-    theta = np.empty(npsr_dsa+npsr_ska)
-    theta[0:npsr_dsa] = np.random.uniform(0, np.pi/2, size=npsr_ska)
-    theta[npsr_dsa:] = np.random.uniform(-np.pi/2, 0, size=npsr_ska)
+    theta = np.random.uniform(-np.pi/2,np.pi/2, size=(npsr_ska+npsr_dsa))
+    # theta = np.empty(npsr_dsa+npsr_ska)
+    # theta[0:npsr_dsa] = np.random.uniform(0, np.pi/2, size=npsr_ska)
+    # theta[npsr_dsa:] = np.random.uniform(-np.pi/2, 0, size=npsr_ska)
 
     # assign error array
-    err = np.zeros(npsr_ska+npsr_dsa)
-    err[0:npsr_dsa] += err_dsa
-    err[npsr_dsa:] += err_ska
+    err = np.zeros(npsr_ska+npsr_dsa) + err
 
     nbins = 500 # number of frequency bins
     freqs = np.logspace(np.log10(1/(Tobs*YEAR)),np.log10((cad*365*Tobs)/(2*Tobs*YEAR)),nbins) # frequency range [1/Tobs, nToAs/2Tobs]
