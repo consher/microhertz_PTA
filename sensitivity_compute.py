@@ -1,3 +1,7 @@
+# author: Conor Sheridan
+# date: 2026/11/08
+# description: compute power-law and sky sensitivity for a given configuration PTA
+
 import numpy as np
 import json
 import hasasia.sensitivity as hasen

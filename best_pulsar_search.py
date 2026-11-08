@@ -1,3 +1,7 @@
+# author: Conor Sheridan
+# date: 2026/11/08
+# description: rank pulsars based on their radiometer error for a given telescope
+
 from sensitivity_compute import rms_error
 import json
 import sys
